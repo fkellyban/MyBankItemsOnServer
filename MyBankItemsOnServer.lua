@@ -18,7 +18,8 @@ end
 -- SavedVariables Global
 local addonTable = ...
 local f = CreateFrame("Frame")
-local playerKey = UnitName("player") .. "-" .. GetRealmName()
+local server = GetRealmName();
+local playerKey = UnitName("player") .. "-" .. server
 local currentFilter = "Tous"
 local currentSearchText = ""
 
@@ -50,6 +51,11 @@ local function GetItemInfoDetail(bag, slot)
       local _, count, _, _, _, _, link = GetContainerItemInfo(bag, slot)
       return GetContainerItemLink(bag, slot), count
    end
+end
+
+-- Check if it's a good server
+local function IsSameServer(fullName)
+   return string.match(fullName, "%-(.+)$") == server
 end
 
 -- Scan player bags (0-4)
@@ -138,7 +144,7 @@ end)
 itemFrame:Hide()
 itemFrame.title = itemFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 itemFrame.title:SetPoint("TOP", 0, -5)
-itemFrame.title:SetText("Objets en banque et sacs - ".. color("green",GetRealmName()))
+itemFrame.title:SetText("Objets en banque et sacs - ".. color("green",server))
 
 -- filters Items
 local listFiltersItem = { "Tous", "Arme", "Armure", "Consommable", "Composant", "Autres" }
@@ -196,11 +202,14 @@ local function CreateItemButton(parent, itemID, totalCount)
       GameTooltip:AddLine(" ")
 
       for name, data in pairs(MyBankItemsOnServerDB) do
-         local count = 0
-         if data.bags and data.bags[itemID] then count = count + data.bags[itemID] end
-         if data.bank and data.bank[itemID] then count = count + data.bank[itemID] end
-         if count > 0 then
-            GameTooltip:AddDoubleLine(name, count)
+         --print(name .. " and ".. server .. " -> " .. string.match(name, "%-(.+)$")) -- debug
+         if IsSameServer(name) then  -- Add check for filter by server
+            local count = 0
+            if data.bags and data.bags[itemID] then count = count + data.bags[itemID] end
+            if data.bank and data.bank[itemID] then count = count + data.bank[itemID] end
+            if count > 0 then
+               GameTooltip:AddDoubleLine(name, count)
+            end
          end
       end
 
@@ -224,14 +233,16 @@ local function CreateItemButton(parent, itemID, totalCount)
 			end
 
 			for name, data in pairs(MyBankItemsOnServerDB) do
-				local bagCount = data.bags and data.bags[itemID] or 0
-				local bankCount = data.bank and data.bank[itemID] or 0
-				local charTotal = bagCount + bankCount
+            if IsSameServer(name) then  -- Add check for filter by server
+               local bagCount = data.bags and data.bags[itemID] or 0
+               local bankCount = data.bank and data.bank[itemID] or 0
+               local charTotal = bagCount + bankCount
 
-				if charTotal > 0 then
-					print(string.format("- %s: %d (%d bags / %d bank)", name, charTotal, bagCount, bankCount))
-					total = total + charTotal
-				end
+               if charTotal > 0 then
+                  print(string.format("- %s: %d (%d bags / %d bank)", name, charTotal, bagCount, bankCount))
+                  total = total + charTotal
+               end
+            end
 			end
 
 			print("Total sur le compte :", total)
@@ -258,10 +269,12 @@ local function RefreshItemDisplay()
    end
 
    local items = {}
-   for _, data in pairs(MyBankItemsOnServerDB) do
-      for src, list in pairs(data) do
-         for itemID, count in pairs(list) do
-            items[itemID] = (items[itemID] or 0) + count
+   for name, data in pairs(MyBankItemsOnServerDB) do  -- Add check for filter by server
+      if IsSameServer(name) then -- 
+         for src, list in pairs(data) do
+            for itemID, count in pairs(list) do
+               items[itemID] = (items[itemID] or 0) + count
+            end
          end
       end
    end
@@ -368,7 +381,7 @@ end)
 minimapButton:SetScript("OnEnter", function(self)
    GameTooltip:SetOwner(self, "ANCHOR_RIGHT")
    GameTooltip:SetText("Cliquez pour ouvrir ou ".. color("yellow",cmd[1]), 1, 1, 1)
-   GameTooltip:AddLine("Serveur : " .. color("green",GetRealmName()), 0.8, 0.8, 0.8)
+   GameTooltip:AddLine("Serveur : " .. color("green",server), 0.8, 0.8, 0.8)
    GameTooltip:Show()
 end)
 
