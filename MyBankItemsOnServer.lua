@@ -134,6 +134,7 @@ itemFrame:SetSize(560, 400)
 itemFrame:SetPoint("CENTER")
 itemFrame:SetMovable(true)
 itemFrame:EnableMouse(true)
+itemFrame:SetFrameStrata("MEDIUM") -- "BACKGROUND", "LOW", "MEDIUM", "HIGH", "DIALOG", "FULLSCREEN", "FULLSCREEN_DIALOG", "TOOLTIP"
 itemFrame:RegisterForDrag("LeftButton")
 itemFrame:SetScript("OnDragStart", function(self)
     self:StartMoving()
@@ -147,7 +148,7 @@ itemFrame.title:SetPoint("TOP", 0, -5)
 itemFrame.title:SetText("Objets en banque et sacs - ".. color("green",server))
 
 -- filters Items
-local listFiltersItem = { "Tous", "Arme", "Armure", "Consommable", "Composant", "Autres" }
+local listFiltersItem = { "Tous", "Arme", "Armure", "Consommable", "Autres" }
 local filterButtons = {}
 
 local filterFrame = CreateFrame("Frame", nil, itemFrame)
@@ -169,6 +170,15 @@ scrollFrame:SetPoint("BOTTOMRIGHT", 0, 10)
 local content = CreateFrame("Frame", nil, scrollFrame)
 content:SetSize(1, 1)
 scrollFrame:SetScrollChild(content)
+
+--Button to display CharInventory
+local btnCharInv = CreateFrame("Button", nil, filterFrame, "UIPanelButtonTemplate")
+btnCharInv:SetSize(100, 20)
+btnCharInv:SetPoint("TOPLEFT", 440, -22)
+btnCharInv:SetText(color("orange","Personnages"))
+btnCharInv:SetScript("OnClick", function()
+   ShowCharInventory()
+end)
 
 -- Items clicable
 local function CreateItemButton(parent, itemID, totalCount)
@@ -299,8 +309,6 @@ local function RefreshItemDisplay()
       local show = false
       if currentFilter == "Tous" then
          show = true
-      elseif currentFilter == "Composant" then
-         show = itemType == "Composants" or itemType == "Matière première"
       elseif currentFilter == "Autres" then
          show = not (itemType == "Arme" or itemType == "Armure" or itemType == "Consommable" or itemType == "Composants" or itemType == "Matière première")
       else
