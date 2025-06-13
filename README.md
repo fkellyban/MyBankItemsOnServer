@@ -18,4 +18,4 @@ _Pour expert : utilise un lien symbolique pour le répertoire (cmd /mklink on wi
 
 ### Addons Included in this addon
 - FKellyColor  _--easy color in code_
-- FkCharInventory   _--add frame for see the items equiped on characters
+- FkCharInventory   _--add frame for see the items equiped on characters_
