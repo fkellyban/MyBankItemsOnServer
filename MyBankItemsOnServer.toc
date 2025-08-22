@@ -1,7 +1,7 @@
 ## Interface: 11507
 ## Title: MyBankItemsOnServer
 ## Notes: Display the regroup view for all of your items in bags characters and banks (after opening), and characters items
-## Version: 1.5.0
+## Version: 1.7.0
 ## Author: LQI
 ## SavedVariables: MyBankItemsOnServerDB, FKCI_DB
 Styles/FKellyColor.lua

@@ -6,7 +6,7 @@ local addonName = ...
 -- get metadata version addon
 local version = GetAddOnMetadata(addonName, "Version")
 -- init the local texts commands
-local cmd = {"/bankitems"}
+local cmd = {"/bi"}
 local cmdInfos = {"Ouvre l'écran de bank."}
 
 -- display in print console the addon informations
@@ -19,9 +19,17 @@ end
 local addonTable = ...
 local f = CreateFrame("Frame")
 local server = GetRealmName();
-local playerKey = UnitName("player") .. "-" .. server
+local faction = UnitFactionGroup("player");
+local playerKey = UnitName("player") .. "-" .. server .. "-" .. faction
 local currentFilter = "Tous"
 local currentSearchText = ""
+-- Set color
+local factionWithColor
+if faction == "Alliance" then
+   factionWithColor = color("blue", faction)
+else
+   factionWithColor = color("red", faction)
+end
 
 MyBankItemsOnServerDB = MyBankItemsOnServerDB or {}
 
@@ -55,7 +63,11 @@ end
 
 -- Check if it's a good server
 local function IsSameServer(fullName)
-   return string.match(fullName, "%-(.+)$") == server
+   -- TODO : update to check 
+   --print("IsSameServer ?") --debug
+   --print(string.match(fullName, "%-(.+)$")) --debug
+   --return string.match(fullName, "%-(.+)$") == server -- old in 1.6.0
+   return string.match(fullName, "%-(.+)$") == server .. "-" .. faction
 end
 
 -- Scan player bags (0-4)
@@ -145,7 +157,7 @@ end)
 itemFrame:Hide()
 itemFrame.title = itemFrame:CreateFontString(nil, "OVERLAY", "GameFontHighlight")
 itemFrame.title:SetPoint("TOP", 0, -5)
-itemFrame.title:SetText("Objets en banque et sacs - ".. color("green",server))
+itemFrame.title:SetText("Objets en banque et sacs - ".. color("green",server) .. " - " .. factionWithColor)
 
 -- filters Items
 local listFiltersItem = { "Tous", "Arme", "Armure", "Consommable", "Autres" }
@@ -400,10 +412,14 @@ end)
 --==============
 -- Slash command
 SLASH_MYBANKITEMS1 = cmd[1]
-SlashCmdList["MYBANKITEMS"] = function()
-   if itemFrame:IsShown() then
+SlashCmdList["MYBANKITEMS"] = function(msg)
+   msg = msg:lower()
+   if msg == "reset" then
+        MyBankItemsOnServerDB[playerKey] = {}
+        print("MyBookItemsOnServer: Bases de données" .. playerKey .. " a été réinitialisées.")
+   elseif itemFrame:IsShown() then
       itemFrame:Hide()
-   else
+   elseif not itemFrame:IsShown() then
       -- set at empty the searchBar
       inputBox:SetText("")
       currentSearchText = ""
@@ -411,5 +427,9 @@ SlashCmdList["MYBANKITEMS"] = function()
       RefreshItemDisplay()
       -- show frame bankitems
       itemFrame:Show()
+   else
+      print("MyBankItemsOnServer commands:")
+      print("  /bi        - Affiche/Cache l'ecran bank")
+      print("  /bi reset  - reset la base joueur")
    end
 end
